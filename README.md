@@ -12,7 +12,7 @@ el historial y descargar el reporte PDF de una siembra.
 | Autenticación | Registro de cuenta, login con JWT, sesión persistente y cierre de sesión. |
 | Parcelas | Alta, edición y baja de microparcelas (textura de suelo, coordenadas, área). |
 | Siembras | Ciclos de cultivo por parcela, con catálogo de hortalizas. Permite editar la fecha de cosecha para cerrar un ciclo y registrar el siguiente. |
-| Recomendación | Genera una recomendación de riego para una siembra existente. |
+| Recomendación | Genera una recomendación de riego para una siembra existente y muestra los datos del pronóstico de Open-Meteo (temperaturas, precipitación, humedad, viento, radiación, etc.) con los que se calculó. |
 | Historial | Consultas de recomendación registradas para cada siembra. |
 | Reportes | Descarga del PDF con la última recomendación de la siembra. |
 

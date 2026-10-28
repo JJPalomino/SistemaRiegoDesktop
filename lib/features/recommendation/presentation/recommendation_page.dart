@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:sistema_riego_desktop/core/network/api_error.dart';
 import 'package:sistema_riego_desktop/core/utils/etiquetas.dart';
 import 'package:sistema_riego_desktop/features/history/providers/history_provider.dart';
@@ -114,7 +115,7 @@ class _RecommendationPageState extends ConsumerState<RecommendationPage> {
                 }
                 return SingleChildScrollView(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Card(
                         child: Padding(
@@ -134,6 +135,8 @@ class _RecommendationPageState extends ConsumerState<RecommendationPage> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      _TarjetaClima(clima: rec.clima),
                       const SizedBox(height: 16),
                       Card(
                         child: Padding(
@@ -246,5 +249,185 @@ class _RecommendationPageState extends ConsumerState<RecommendationPage> {
       // La recomendacion quedo registrada en el historial de la siembra.
       await ref.read(historyProvider.notifier).load(siembraId);
     }
+  }
+}
+
+/// Fecha ISO (`2026-10-28`) en formato local corto (`28/10/2026`).
+String _fechaCorta(String? iso) {
+  if (iso == null || iso.trim().isEmpty) return '';
+  final fecha = DateTime.tryParse(iso);
+  return fecha == null ? iso : DateFormat('dd/MM/yyyy').format(fecha);
+}
+
+/// Valor con unidad y decimales fijos; `null` si el clima no trajo el dato.
+String? _medida(double? valor, String unidad, {int decimales = 1}) =>
+    valor == null ? null : '${valor.toStringAsFixed(decimales)} $unidad';
+
+/// Dato climático listo para mostrar, o `null` si el clima no lo trajo.
+Widget? _datoClima({
+  required IconData icono,
+  required String etiqueta,
+  required String? valor,
+}) =>
+    valor == null
+        ? null
+        : _DatoClima(icono: icono, etiqueta: etiqueta, valor: valor);
+
+/// Datos del pronóstico de Open-Meteo con los que se generó la recomendación.
+class _TarjetaClima extends StatelessWidget {
+  const _TarjetaClima({required this.clima});
+
+  final ClimaPronostico clima;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final inicio = _fechaCorta(clima.fechaInicioPronostico);
+    final fin = _fechaCorta(clima.fechaFinPronostico);
+    final rango = inicio.isEmpty || fin.isEmpty
+        ? '${clima.diasPronostico} días'
+        : '$inicio a $fin (${clima.diasPronostico} días)';
+    final fuente = clima.fuente == 'open_meteo' ? 'Open-Meteo' : clima.fuente;
+    final ubicacion =
+        '${clima.latitud.toStringAsFixed(4)}, ${clima.longitud.toStringAsFixed(4)}';
+
+    final datos = <Widget?>[
+      _datoClima(
+        icono: Icons.place_outlined,
+        etiqueta: 'Ubicación',
+        valor: ubicacion,
+      ),
+      _datoClima(
+        icono: Icons.water_drop_outlined,
+        etiqueta: 'Precipitación acumulada',
+        valor: _medida(clima.precipitacionMm, 'mm'),
+      ),
+      _datoClima(
+        icono: Icons.air,
+        etiqueta: 'Evapotranspiración',
+        valor: _medida(clima.evapotranspiracionRefMm, 'mm'),
+      ),
+      _datoClima(
+        icono: Icons.thermostat,
+        etiqueta: 'Temperatura máxima',
+        valor: _medida(clima.tempMaxC, '°C'),
+      ),
+      _datoClima(
+        icono: Icons.ac_unit,
+        etiqueta: 'Temperatura mínima',
+        valor: _medida(clima.tempMinC, '°C'),
+      ),
+      _datoClima(
+        icono: Icons.water,
+        etiqueta: 'Humedad relativa',
+        valor: _medida(clima.humedadRelativaPct, '%'),
+      ),
+      _datoClima(
+        icono: Icons.opacity,
+        etiqueta: 'Punto de rocío',
+        valor: _medida(clima.puntoRocioC, '°C'),
+      ),
+      _datoClima(
+        icono: Icons.speed,
+        etiqueta: 'Velocidad del viento',
+        valor: _medida(clima.velocidadVientoKmh, 'km/h'),
+      ),
+      _datoClima(
+        icono: Icons.umbrella_outlined,
+        etiqueta: 'Probabilidad de lluvia',
+        valor: _medida(clima.probabilidadPrecipitacionPct, '%'),
+      ),
+      _datoClima(
+        icono: Icons.wb_sunny_outlined,
+        etiqueta: 'Radiación solar',
+        valor: _medida(clima.radiacionSolarWm2, 'W/m²', decimales: 0),
+      ),
+      _datoClima(
+        icono: Icons.cloud_outlined,
+        etiqueta: 'Cobertura de nubes',
+        valor: _medida(clima.coberturaNubesPct, '%'),
+      ),
+      _datoClima(
+        icono: Icons.grass,
+        etiqueta: 'Humedad del suelo',
+        valor: _medida(clima.humedadSueloPct, '%'),
+      ),
+      _datoClima(
+        icono: Icons.thermostat_auto,
+        etiqueta: 'Temperatura del suelo',
+        valor: _medida(clima.temperaturaSueloC, '°C'),
+      ),
+    ].whereType<Widget>().toList();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.cloud_outlined, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Text('Datos climáticos del pronóstico',
+                    style: theme.textTheme.titleMedium),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$rango · Fuente: $fuente',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 16,
+              runSpacing: 14,
+              children: datos,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DatoClima extends StatelessWidget {
+  const _DatoClima({
+    required this.icono,
+    required this.etiqueta,
+    required this.valor,
+  });
+
+  final IconData icono;
+  final String etiqueta;
+  final String valor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: 220,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icono, size: 20, color: theme.colorScheme.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  etiqueta,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+                Text(valor, style: theme.textTheme.bodyMedium),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
