@@ -129,7 +129,7 @@ class SiembrasPage extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Eliminar siembra'),
-        content: const Text('¿Eliminar esta siembra?'),
+        content: const Text('¿Deseas eliminar esta siembra?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),

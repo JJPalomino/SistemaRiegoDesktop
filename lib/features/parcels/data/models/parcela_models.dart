@@ -17,6 +17,15 @@ enum TexturaSuelo {
         TexturaSuelo.arcilloso => 'arcilloso',
       };
 
+  /// Etiqueta que se muestra al usuario (con mayúscula y sin guion bajo).
+  String get label => switch (this) {
+        TexturaSuelo.arenoso => 'Arenoso',
+        TexturaSuelo.francoArenoso => 'Franco arenoso',
+        TexturaSuelo.franco => 'Franco',
+        TexturaSuelo.francoArcilloso => 'Franco arcilloso',
+        TexturaSuelo.arcilloso => 'Arcilloso',
+      };
+
   static TexturaSuelo fromApi(String? value) {
     switch (value) {
       case 'arenoso':

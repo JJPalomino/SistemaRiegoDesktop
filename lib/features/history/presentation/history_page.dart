@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sistema_riego_desktop/core/network/api_error.dart';
+import 'package:sistema_riego_desktop/core/utils/etiquetas.dart';
 import 'package:sistema_riego_desktop/features/history/data/models/history_models.dart';
 import 'package:sistema_riego_desktop/features/history/providers/history_provider.dart';
 import 'package:sistema_riego_desktop/features/parcels/providers/parcels_provider.dart';
@@ -108,9 +109,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                             return ListTile(
                               leading: const Icon(Icons.history),
                               title: Text(
-                                  '${item.nombreHortaliza} - ${item.etapa ?? "N/A"}'),
+                                  '${item.nombreHortaliza} - ${etapaEtiqueta(item.etapa)}'),
                               subtitle: Text(
-                                  '${DateFormat('dd/MM/yyyy HH:mm').format(item.consultadoEn ?? DateTime.now())} • Urgencia: ${item.nivelUrgenciaMax}'),
+                                  '${DateFormat('dd/MM/yyyy HH:mm').format(item.consultadoEn ?? DateTime.now())} • Urgencia: ${urgenciaEtiqueta(item.nivelUrgenciaMax)}'),
                               trailing: IconButton(
                                 icon: const Icon(Icons.visibility),
                                 onPressed: () =>
@@ -179,10 +180,10 @@ class _HistoryDetailDialog extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Etapa: ${detail.etapa ?? "N/A"} • Días: ${detail.diasSiembra}'),
+                  Text('Etapa: ${etapaEtiqueta(detail.etapa)} • Días: ${detail.diasSiembra}'),
                   Text('Consultado: ${DateFormat('dd/MM/yyyy HH:mm').format(detail.consultadoEn ?? DateTime.now())}'),
-                  Text('Modelo: ${detail.modeloLlm ?? "N/A"}'),
-                  Text('Nivel: ${detail.nivelUrgenciaMax}'),
+                  Text('Modelo: ${detail.modeloLlm ?? "No registrado"}'),
+                  Text('Nivel de urgencia: ${urgenciaEtiqueta(detail.nivelUrgenciaMax)}'),
                   const Divider(),
                   Text('Recomendación de riego',
                       style: Theme.of(context).textTheme.titleSmall),

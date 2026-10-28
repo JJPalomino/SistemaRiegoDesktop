@@ -113,7 +113,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             ButtonSegment(
                               value: false,
                               icon: Icon(Icons.login),
-                              label: Text('Ingresar'),
+                              label: Text('Iniciar sesión'),
                             ),
                             ButtonSegment(
                               value: true,
@@ -204,7 +204,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : Text(_isRegister ? 'Crear cuenta' : 'Ingresar'),
+                            : Text(_isRegister ? 'Crear cuenta' : 'Iniciar sesión'),
                       ),
                       if (authState.hasError) ...[
                         const SizedBox(height: 16),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sistema_riego_desktop/core/network/api_error.dart';
+import 'package:sistema_riego_desktop/core/utils/etiquetas.dart';
 import 'package:sistema_riego_desktop/features/history/providers/history_provider.dart';
 import 'package:sistema_riego_desktop/features/parcels/providers/parcels_provider.dart';
 import 'package:sistema_riego_desktop/features/recommendation/data/models/recommendation_models.dart';
@@ -42,8 +43,9 @@ class _RecommendationPageState extends ConsumerState<RecommendationPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SwitchListTile(
-                    title: const Text('Usar siembra existente'),
-                    subtitle: const Text('Flujo con siembra_id para generar historial reproducible'),
+                    title: const Text('Usar una siembra registrada'),
+                    subtitle: const Text(
+                        'La recomendación se guarda en el historial de la siembra.'),
                     value: _useSiembra,
                     onChanged: (v) => setState(() => _useSiembra = v),
                   ),
@@ -122,12 +124,12 @@ class _RecommendationPageState extends ConsumerState<RecommendationPage> {
                             children: [
                               Text('Cultivo: ${rec.nombreHortaliza}',
                                   style: Theme.of(context).textTheme.titleLarge),
-                              Text('Etapa: ${rec.etapa ?? "N/A"} • Días: ${rec.diasSiembra}'),
+                              Text('Etapa: ${etapaEtiqueta(rec.etapa)} • Días: ${rec.diasSiembra}'),
                               if (rec.idConsulta != null)
-                                Text('ID Consulta: ${rec.idConsulta}'),
-                              Text('Nivel de urgencia: ${rec.nivelUrgenciaMax}'),
+                                Text('ID de consulta: ${rec.idConsulta}'),
+                              Text('Nivel de urgencia: ${urgenciaEtiqueta(rec.nivelUrgenciaMax)}'),
                               if (rec.demoMode)
-                                const Chip(label: Text('Modo Demo')),
+                                const Chip(label: Text('Modo de demostración')),
                             ],
                           ),
                         ),
@@ -185,7 +187,7 @@ class _RecommendationPageState extends ConsumerState<RecommendationPage> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                               child: Text(
-                                                  '[${a.nivel}] ${a.descripcion}')),
+                                                  '[${urgenciaEtiqueta(a.nivel)}] ${a.descripcion}')),
                                         ],
                                       ),
                                     )),

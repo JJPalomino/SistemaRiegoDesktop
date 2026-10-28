@@ -25,11 +25,11 @@ String apiErrorMessage(Object error) {
     case DioExceptionType.connectionError:
     case DioExceptionType.connectionTimeout:
       return 'No se pudo conectar con el servidor (${error.requestOptions.baseUrl}). '
-          'Verifica que el backend esté en ejecución.';
+          'Verifica que el servicio esté en ejecución.';
     case DioExceptionType.receiveTimeout:
     case DioExceptionType.sendTimeout:
     case DioExceptionType.transformTimeout:
-      return 'El servidor tardó demasiado en responder. Intenta de nuevo.';
+      return 'El servidor tardó demasiado en responder. Inténtalo de nuevo.';
     case DioExceptionType.badCertificate:
       return 'El certificado del servidor no es válido.';
     case DioExceptionType.cancel:

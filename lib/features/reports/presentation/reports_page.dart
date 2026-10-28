@@ -90,7 +90,7 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                         content: Text(
-                                            'Reporte descargado correctamente')));
+                                            'El reporte se descargó correctamente.')));
                               }
                             } catch (e) {
                               if (context.mounted) {
@@ -124,7 +124,7 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
                       style: TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
                   Text(
-                      'El reporte PDF incluye los datos de la siembra, condiciones climáticas, recomendación de riego, recomendación general y alertas de la última recomendación generada para esa siembra.'),
+                      'El reporte PDF incluye los datos de la siembra, las condiciones climáticas, la recomendación de riego, la recomendación general y las alertas de la última recomendación generada para esa siembra.'),
                 ],
               ),
             ),

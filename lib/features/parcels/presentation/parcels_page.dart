@@ -47,16 +47,18 @@ class ParcelsPage extends ConsumerWidget {
                         leading: const Icon(Icons.landscape),
                         title: Text(parcela.nombre),
                         subtitle: Text(
-                            '${parcela.latitud}, ${parcela.longitud} • ${parcela.texturaSuelo.apiValue}'),
+                            '${parcela.latitud}, ${parcela.longitud} • ${parcela.texturaSuelo.label}'),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
+                              tooltip: 'Editar parcela',
                               icon: const Icon(Icons.edit),
                               onPressed: () =>
                                   _showEditDialog(context, ref, parcela),
                             ),
                             IconButton(
+                              tooltip: 'Eliminar parcela',
                               icon: const Icon(Icons.delete),
                               onPressed: () => _confirmDelete(context, ref, parcela),
                             ),
@@ -104,7 +106,7 @@ class ParcelsPage extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Eliminar parcela'),
-        content: Text('¿Eliminar ${parcela.nombre}?'),
+        content: Text('¿Deseas eliminar la parcela "${parcela.nombre}"?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
@@ -256,7 +258,7 @@ class _ParcelaDialogState extends State<_ParcelaDialog> {
                   decoration: const InputDecoration(labelText: 'Textura del suelo'),
                   items: TexturaSuelo.values
                       .map((e) => DropdownMenuItem(
-                          value: e, child: Text(e.apiValue)))
+                          value: e, child: Text(e.label)))
                       .toList(),
                   onChanged: (v) => setState(() => _textura = v!),
                 ),
