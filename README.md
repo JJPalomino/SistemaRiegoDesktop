@@ -9,7 +9,7 @@ el historial y descargar el reporte PDF de una siembra.
 
 | Módulo | Descripción |
 | --- | --- |
-| Autenticación | Registro de cuenta, login con JWT, sesión persistente y cierre de sesión. |
+| Autenticación | Registro de cuenta, inicio y cierre de sesión con JWT. La sesión termina al cerrar la app. |
 | Parcelas | Alta, edición y baja de microparcelas (textura de suelo, coordenadas, área). |
 | Siembras | Ciclos de cultivo por parcela, con catálogo de hortalizas. Permite editar la fecha de cosecha para cerrar un ciclo y registrar el siguiente. |
 | Recomendación | Genera una recomendación de riego para una siembra existente y muestra los datos del pronóstico de Open-Meteo (temperaturas, precipitación, humedad, viento, radiación, etc.) con los que se calculó. |
@@ -117,8 +117,10 @@ tool/              # utilidades de verificación
 
 ## Notas
 
-- La app usa `flutter_secure_storage` para guardar el token JWT y restaurar la
-  sesión al abrirla; si el token expiró, regresa al login.
+- El token JWT se guarda **solo en memoria** (`DioClient`): al cerrar la app la
+  sesión termina y hay que iniciar sesión de nuevo. El botón de cerrar sesión
+  hace lo mismo sin necesidad de salir del programa y además descarta los datos
+  del usuario anterior (parcela seleccionada, listas, historial).
 - El endpoint de recomendaciones usa la familia **Gemini Flash-Lite**
   (`GEMINI_MODEL=gemini-3.5-flash-lite`), que es gratuita y responde en ~2 s.
   El backend recorre una cadena de modelos (`GEMINI_MODELOS_RESPALDO`): si uno

@@ -17,25 +17,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscure = true;
-  bool _restoring = true;
   bool _isRegister = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _restoreSession());
-  }
-
-  Future<void> _restoreSession() async {
-    await ref.read(authStateProvider.notifier).restoreSession();
-    if (!mounted) return;
-    final state = ref.read(authStateProvider);
-    if (state.hasValue && state.value != null) {
-      context.go('/parcels');
-      return;
-    }
-    setState(() => _restoring = false);
-  }
 
   @override
   void dispose() {
@@ -70,7 +52,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
-    final cargando = authState.isLoading || _restoring;
+    final cargando = authState.isLoading;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
