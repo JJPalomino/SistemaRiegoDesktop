@@ -119,12 +119,14 @@ tool/              # utilidades de verificación
 
 - La app usa `flutter_secure_storage` para guardar el token JWT y restaurar la
   sesión al abrirla; si el token expiró, regresa al login.
-- El endpoint de recomendaciones depende del modelo de Gemini configurado en el
-  backend (`GEMINI_MODEL`). Los modelos con razonamiento pueden tardar más de un
-  minuto: la app espera hasta 5 minutos y el backend usa `GEMINI_TIMEOUT_S`
-  (180 s por defecto). Si el modelo fue retirado, la cuota se agotó o Gemini no
-  responde, la API devuelve `502 No se pudo generar la recomendacion` y la app
-  muestra ese mensaje.
+- El endpoint de recomendaciones usa la familia **Gemini Flash-Lite**
+  (`GEMINI_MODEL=gemini-3.5-flash-lite`), que es gratuita y responde en ~2 s.
+  El backend recorre una cadena de modelos (`GEMINI_MODELOS_RESPALDO`): si uno
+  agota su cuota diaria (`429`) o está saturado (`503`), pasa al siguiente sin
+  esperar, y cada modelo tiene su propia cuota gratuita. El historial guarda el
+  modelo que realmente respondió. La espera total está acotada por
+  `GEMINI_TOTAL_TIMEOUT_S` (240 s) para no rebasar el tiempo que espera la app
+  (300 s); antes, 3 reintentos de 180 s podían dejarla colgada 9 minutos.
 - El backend no permite dos ciclos traslapados en la misma parcela. Para
   registrar una siembra nueva primero cierra la anterior con su fecha de
   cosecha (botón de editar en Siembras); si se intenta sin cerrarla, la app
