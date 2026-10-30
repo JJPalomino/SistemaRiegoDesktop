@@ -102,7 +102,7 @@ dart run -DAPI_BASE=http://127.0.0.1:8001/api/v1 tool/verify_api.dart
 
 ```
 lib/
-  core/            # configuración, red (Dio + JWT), router, mensajes de error
+  core/            # configuración, red (Dio + JWT), router, tema y mensajes de error
   features/
     auth/          # login, sesión y modelos de usuario
     parcels/       # parcelas
@@ -111,6 +111,7 @@ lib/
     history/       # historial de consultas
     reports/       # descarga de PDF
     home/          # layout de escritorio (NavigationRail)
+assets/images/     # imágenes de la interfaz (fondo del login)
 installer/         # script de Inno Setup y generador del instalador
 tool/              # utilidades de verificación
 ```
@@ -135,3 +136,8 @@ tool/              # utilidades de verificación
   muestra el motivo devuelto por la API.
 - Los modelos de datos están escritos a mano (sin `build_runner`), por lo que no
   hace falta ejecutar generadores de código.
+- La interfaz usa una paleta agrícola (verdes de campo, amarillo de cosecha y
+  tonos de tierra) definida en `lib/core/theme/app_theme.dart`.
+- El login muestra una imagen a pantalla completa: `assets/images/login_background.jpg`
+  (1920×1080, ~53 KB). Para usar otra foto basta **reemplazar ese archivo con el
+  mismo nombre** y recompilar; el velo verde y la tarjeta se adaptan solos.
