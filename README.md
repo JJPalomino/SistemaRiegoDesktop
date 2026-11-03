@@ -134,6 +134,12 @@ tool/              # utilidades de verificación
   registrar una siembra nueva primero cierra la anterior con su fecha de
   cosecha (botón de editar en Siembras); si se intenta sin cerrarla, la app
   muestra el motivo devuelto por la API.
+- En Recomendación el interruptor «Usar una siembra registrada» elige entre dos
+  formas de calcular: con una siembra (queda en su historial) o **rápida**, donde
+  se piden hortaliza y días desde la siembra. En modo rápido se puede indicar
+  una parcela solo para tomar sus coordenadas en el pronóstico; sin parcela se
+  usa el centro de Tlatlauquitepec y la recomendación no se guarda en el
+  historial de ninguna siembra.
 - Los modelos de datos están escritos a mano (sin `build_runner`), por lo que no
   hace falta ejecutar generadores de código.
 - La interfaz usa una paleta agrícola (verdes de campo, amarillo de cosecha y

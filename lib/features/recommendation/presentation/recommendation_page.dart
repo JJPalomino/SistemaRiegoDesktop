@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:sistema_riego_desktop/core/network/api_error.dart';
 import 'package:sistema_riego_desktop/core/utils/etiquetas.dart';
+import 'package:sistema_riego_desktop/features/crops/data/crops_repository.dart';
 import 'package:sistema_riego_desktop/features/history/providers/history_provider.dart';
 import 'package:sistema_riego_desktop/features/parcels/providers/parcels_provider.dart';
 import 'package:sistema_riego_desktop/features/recommendation/data/models/recommendation_models.dart';
@@ -18,12 +20,21 @@ class RecommendationPage extends ConsumerStatefulWidget {
 
 class _RecommendationPageState extends ConsumerState<RecommendationPage> {
   int? _selectedSiembraId;
+  int? _selectedHortalizaId;
+  final _diasController = TextEditingController();
   bool _useSiembra = true;
+
+  @override
+  void dispose() {
+    _diasController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final parcelsState = ref.watch(parcelsProvider);
     final siembrasState = ref.watch(siembrasProvider);
+    final cropsState = ref.watch(cropsProvider);
     final recommendationState = ref.watch(recommendationProvider);
     final selectedParcelaId = ref.watch(selectedParcelaIdProvider);
 
@@ -45,10 +56,20 @@ class _RecommendationPageState extends ConsumerState<RecommendationPage> {
                 children: [
                   SwitchListTile(
                     title: const Text('Usar una siembra registrada'),
-                    subtitle: const Text(
-                        'La recomendación se guarda en el historial de la siembra.'),
+                    subtitle: Text(
+                      _useSiembra
+                          ? 'La recomendación se guarda en el historial de la siembra.'
+                          : 'Recomendación rápida: no queda en el historial de una siembra.',
+                    ),
                     value: _useSiembra,
-                    onChanged: (v) => setState(() => _useSiembra = v),
+                    onChanged: recommendationState.isLoading
+                        ? null
+                        : (v) {
+                            setState(() => _useSiembra = v);
+                            ref
+                                .read(recommendationProvider.notifier)
+                                .clear();
+                          },
                   ),
                   const SizedBox(height: 12),
                   if (_useSiembra) ...[
@@ -92,6 +113,61 @@ class _RecommendationPageState extends ConsumerState<RecommendationPage> {
                         loading: () => const LinearProgressIndicator(),
                         error: (e, st) => Text(apiErrorMessage(e)),
                       ),
+                  ] else ...[
+                    cropsState.when(
+                      data: (hortalizas) => DropdownButtonFormField<int>(
+                        initialValue: _selectedHortalizaId,
+                        decoration: const InputDecoration(
+                          labelText: 'Hortaliza',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: hortalizas
+                            .map((h) => DropdownMenuItem(
+                                value: h.id, child: Text(h.nombre)))
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _selectedHortalizaId = v),
+                      ),
+                      loading: () => const LinearProgressIndicator(),
+                      error: (e, st) => Text(apiErrorMessage(e)),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _diasController,
+                      enabled: !recommendationState.isLoading,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(3),
+                      ],
+                      decoration: const InputDecoration(
+                        labelText: 'Días desde la siembra',
+                        helperText: 'Usa 0 si sembraste hoy.',
+                        prefixIcon: Icon(Icons.event_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    parcelsState.when(
+                      data: (parcelas) => DropdownButtonFormField<int>(
+                        initialValue: selectedParcelaId,
+                        decoration: const InputDecoration(
+                          labelText: 'Parcela (ubicación del clima)',
+                          helperText:
+                              'Opcional: sin parcela se usa el centro de Tlatlauquitepec.',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: parcelas
+                            .map((p) => DropdownMenuItem(
+                                value: p.id, child: Text(p.nombre)))
+                            .toList(),
+                        onChanged: (v) => ref
+                            .read(selectedParcelaIdProvider.notifier)
+                            .state = v,
+                      ),
+                      loading: () => const LinearProgressIndicator(),
+                      error: (e, st) => Text(apiErrorMessage(e)),
+                    ),
                   ],
                   const SizedBox(height: 16),
                   FilledButton.icon(
@@ -224,14 +300,32 @@ class _RecommendationPageState extends ConsumerState<RecommendationPage> {
   }
 
   Future<void> _generateRecommendation(WidgetRef ref) async {
-    if (_useSiembra && _selectedSiembraId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Selecciona una siembra')));
-      return;
+    final parcelaId = ref.read(selectedParcelaIdProvider);
+    int? dias;
+
+    if (_useSiembra) {
+      if (_selectedSiembraId == null) {
+        _avisar('Selecciona una siembra');
+        return;
+      }
+    } else {
+      if (_selectedHortalizaId == null) {
+        _avisar('Selecciona una hortaliza');
+        return;
+      }
+      final texto = _diasController.text.trim();
+      dias = texto.isEmpty ? null : int.tryParse(texto);
+      if (dias == null) {
+        _avisar('Escribe los días desde la siembra');
+        return;
+      }
     }
+
     final solicitud = SolicitudRecomendacion(
       siembraId: _useSiembra ? _selectedSiembraId : null,
-      parcelaId: _useSiembra ? ref.read(selectedParcelaIdProvider) : null,
+      parcelaId: parcelaId,
+      idHortaliza: _useSiembra ? null : _selectedHortalizaId,
+      diasSiembra: _useSiembra ? null : dias,
     );
     await ref.read(recommendationProvider.notifier).getRecommendation(solicitud);
     if (!mounted) return;
@@ -244,11 +338,18 @@ class _RecommendationPageState extends ConsumerState<RecommendationPage> {
       );
       return;
     }
-    final siembraId = _selectedSiembraId;
-    if (siembraId != null) {
-      // La recomendacion quedo registrada en el historial de la siembra.
-      await ref.read(historyProvider.notifier).load(siembraId);
+    if (_useSiembra) {
+      final siembraId = _selectedSiembraId;
+      if (siembraId != null) {
+        // La recomendacion quedo registrada en el historial de la siembra.
+        await ref.read(historyProvider.notifier).load(siembraId);
+      }
     }
+  }
+
+  void _avisar(String mensaje) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(mensaje)));
   }
 }
 
